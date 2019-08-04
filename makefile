@@ -12,8 +12,8 @@ ci-lint:
 
 all: install
 install: go.sum
-		GO111MODULE=on go install -tags "$(build_tags)" ./cmd/emd
-		GO111MODULE=on go install -tags "$(build_tags)" ./cmd/emcli
+		GO111MODULE=on go install -mod=readonly -tags "$(build_tags)" ./cmd/dtd
+		GO111MODULE=on go install -mod=readonly -tags "$(build_tags)" ./cmd/dtcli
 
 go.sum: go.mod
 		@echo "--> Ensure dependencies have not been modified"

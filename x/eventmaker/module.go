@@ -3,17 +3,22 @@ package eventmaker
 import (
 	"encoding/json"
 
- 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/gorilla/mux"
+	"github.com/spf13/cobra"
 
- 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/marbar3778/tic_mark/x/eventmaker/client/cli"
+	"github.com/marbar3778/tic_mark/x/eventmaker/client/rest"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 var (
-	_ sdk.AppModule      = AppModule{}
-	_ sdk.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule      = AppModule{}
+	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
 const ModuleName = "eventmaker"
@@ -43,6 +48,21 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 	return ValidateGenesis(data)
 }
 
+// Register rest routes
+func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
+	rest.RegisterRoutes(ctx, rtr, StoreKey)
+}
+
+// Get the root query command of this module
+func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
+	return cli.GetQueryCmd(StoreKey, cdc)
+}
+
+// Get the root tx command of this module
+func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
+	return cli.GetTxCmd(StoreKey, cdc)
+}
+
 type AppModule struct {
 	AppModuleBasic
 	keeper     BaseKeeper
@@ -59,32 +79,30 @@ func (AppModule) Name() string {
 	return ModuleName
 }
 
-func (em AppModule) RegisterInvariants(ir sdk.InvariantRouter) {}
+func (em AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
 
 func (em AppModule) Route() string {
 	return RouterKey
 }
 
-func (em AppModule) NewHandler() types.Handler {
+func (em AppModule) NewHandler() sdk.Handler {
 	return NewHandler(em.keeper)
 }
 func (em AppModule) QuerierRoute() string {
 	return ModuleName
 }
 
-func (em AppModule) NewQuerierHandler() types.Querier {
+func (em AppModule) NewQuerierHandler() sdk.Querier {
 	return NewQuerier(em.keeper)
 }
 
-func (em AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) types.Tags {
-	return sdk.EmptyTags()
+func (em AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+
+func (em AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
+	return []abci.ValidatorUpdate{}
 }
 
-func (em AppModule) EndBlock(types.Context, abci.RequestEndBlock) ([]abci.ValidatorUpdate, types.Tags) {
-	return []abci.ValidatorUpdate{}, sdk.EmptyTags()
-}
-
-func (em AppModule) InitGenesis(ctx types.Context, data json.RawMessage) []abci.ValidatorUpdate {
+func (em AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
 	return InitGenesis(ctx, em.keeper, genesisState)

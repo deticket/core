@@ -74,4 +74,5 @@ func ValidateGenesis(data GenesisState) error {
 			return fmt.Errorf("Invalid ticketData")
 		}
 	}
+	return nil
 }

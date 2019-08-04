@@ -8,26 +8,27 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/utils"
 	"github.com/cosmos/cosmos-sdk/codec"
-	eventTypes "github.com/marbar3778/tic_mark/types"
+	eventTypes "github.com/marbar3778/tic_mark/x/eventmaker/types"
 	em "github.com/marbar3778/tic_mark/x/eventmaker"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtxb "github.com/cosmos/cosmos-sdk/x/auth/client/txbuilder"
 )
 
-// InitialPrice  sdk.Coin `json:"ticket_price"`
-// MarkUpAllowed int      `json:"mark_up_allowed"`
-// TotalTickets  int      `json:"total_tickets"`
-// TicketsSold   int      `json:"tickets_sold"`
-// Resale        bool     `json:"resale"`
-// }
-// type EventDetails struct {
-// LocationName string `json:"location_name"`
-// Address      string `json:"address"` // Address
-// City         string `json:"city"`    // City in
-// Country      string `json:"country"` // Country
-// Date         string `json:"date"`    // date of
-// }
+func (mc ModuleClient) GetTxCmd() *cobra.Command {
+	ticketTxCmd := &cobra.Command{
+		Use:   "eventmaker",
+		Short: "eventmaker tx subcommands",
+	}
+
+	ticketTxCmd.AddCommand(client.PostCommands(
+		emd.GetCmdCreateEvent(mc.cdc),
+		emd.GetCmdNewOwner(mc.cdc),
+		emd.GetCmdCloseEvent(mc.cdc),
+	)...)
+
+	return ticketTxCmd
+}
 
 // CreateEvent(ctx sdk.Context, eventName string, totalTickets int,
 // 	eventOwner string, eventOwnerAddress sdk.AccAddress, resale bool,
