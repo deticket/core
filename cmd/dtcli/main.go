@@ -23,7 +23,6 @@ const (
 	storeDT  = "de_ticket"
 )
 
-
 func main() {
 	cobra.EnableCommandSorting = false
 
